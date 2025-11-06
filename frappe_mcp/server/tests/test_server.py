@@ -9,7 +9,7 @@ from frappe_mcp.server.server import MCP
 
 @pytest.fixture
 def mcp_instance():
-    mcp = MCP()
+    mcp = MCP(name='frappe-mcp')
 
     @mcp.tool()
     def adder(a: int, b: int) -> dict:
