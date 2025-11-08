@@ -3,11 +3,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "frappe-mcp"
-description = "Frappe MCP allows building MCP compatibility into Frappe apps"
+name = "frappe-dev-mcp-server"
+description = "A Model Context Protocol (MCP) server that provides AI assistance for Frappe/ERPNext development"
 authors = [
-  { name = "Alan Tom", email = "me@18alan.space" },
-  { name = "Frappe Techonologies Pvt Ltd", email = "developers@frappe.io" },
+  { name = "SajmustafaKe", email = "your-email@example.com" },
 ]
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,9 +21,9 @@ license = "MIT"
 license-files = ["LICENSE"]
 
 [project.urls]
-Homepage = "https://github.com/frappe/frappe-mcp"
-Documentation = "https://github.com/frappe/frappe-mcp"
-Source = "https://github.com/frappe/frappe-mcp"
+Homepage = "https://github.com/SajmustafaKe/frappe-dev-mcp-server"
+Documentation = "https://github.com/SajmustafaKe/frappe-dev-mcp-server"
+Source = "https://github.com/SajmustafaKe/frappe-dev-mcp-server"
 
 [project.scripts]
 frappe-mcp = "frappe_mcp.cli:run"
