@@ -1,0 +1,36 @@
+{
+  "name": "frappe-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for Frappe/ERPNext development assistance",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "./server.sh start",
+    "stop": "./server.sh stop", 
+    "restart": "./server.sh restart",
+    "status": "./server.sh status",
+    "dev": "tsx src/index.ts",
+    "validate": "node validate-mcp.js",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "@types/express": "^5.0.5",
+    "axios": "^1.6.0",
+    "express": "^5.1.0",
+    "fs-extra": "^11.2.0",
+    "glob": "^10.3.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.0",
+    "@types/glob": "^8.1.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

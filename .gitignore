@@ -1,4 +1,11 @@
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
 # Python
 __pycache__/
 *.py[cod]
@@ -30,3 +37,10 @@ notes.md
 .ruff_cache/
 dist/
 .venv/
+
+# Server logs and PIDs
+server.log
+server.pid
+
+# Config files (may contain sensitive info)
+claude_desktop_config.json
