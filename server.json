@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.SajmustafaKe/frappe-dev-mcp-server",
+  "title": "Frappe Dev MCP Server",
+  "description": "MCP server for Frappe/ERPNext development with DocTypes, bench commands, and app management",
+  "repository": {
+    "url": "https://github.com/SajmustafaKe/frappe-dev-mcp-server",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "frappe-dev-mcp-server",
+      "version": "1.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Path to your Frappe/ERPNext bench directory (defaults to current directory if not specified)",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "FRAPPE_PATH"
+        }
+      ]
+    }
+  ]
+}
