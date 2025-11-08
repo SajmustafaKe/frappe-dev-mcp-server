@@ -2,7 +2,7 @@
 
 # Frappe MCP Server Startup Script
 
-SERVER_DIR="/Users/mac/ERPNext/mkahawa/frappe-mcp-server"
+SERVER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PID_FILE="$SERVER_DIR/server.pid"
 
 start_server() {
