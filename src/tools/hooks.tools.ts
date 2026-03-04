@@ -154,6 +154,22 @@ export const hooksTools: ToolModule = {
       },
     },
     {
+      name: "frappe_add_apps_screen_hook",
+      description: "Add the add_to_apps_screen hook to hooks.py (v16) - this is how custom apps register their icon and entry point on the desktop apps screen",
+      inputSchema: {
+        type: "object",
+        properties: {
+          app_name: { type: "string", description: "Name of the Frappe app" },
+          identifier: { type: "string", description: "Unique identifier for the app entry (typically app_name)" },
+          logo: { type: "string", description: "Path to app logo (e.g., /assets/myapp/images/logo.png)" },
+          title: { type: "string", description: "Display title on the apps screen" },
+          route: { type: "string", description: "Route to navigate to when clicked (e.g., /myapp)" },
+          has_permission: { type: "string", description: "Dotted path to a permission check method (optional)" },
+        },
+        required: ["app_name", "identifier", "title", "route"],
+      },
+    },
+    {
       name: "frappe_set_hooks_property",
       description: "Set any arbitrary property in hooks.py (for hooks not covered by specialized tools)",
       inputSchema: {
@@ -345,6 +361,27 @@ export const hooksTools: ToolModule = {
 
         await fs.writeFile(hooksPath, content);
         return { content: [{ type: "text", text: `Added website_generator "${doctype}" in ${app_name}/hooks.py` }] };
+      }
+
+      case "frappe_add_apps_screen_hook": {
+        const { app_name, identifier, logo, title, route, has_permission } = args;
+        const hooksPath = getHooksPath(ctx.frappePath, app_name);
+        let content = await readFileIfExists(hooksPath) || "";
+
+        let entry = `{\n\t\t"name": "${identifier}",\n\t\t"title": "${title}",\n\t\t"route": "${route}",`;
+        if (logo) entry += `\n\t\t"logo": "${logo}",`;
+        if (has_permission) entry += `\n\t\t"has_permission": "${has_permission}",`;
+        entry += "\n\t}";
+
+        if (content.includes("add_to_apps_screen")) {
+          const regex = /(add_to_apps_screen\s*=\s*\[)/m;
+          content = content.replace(regex, `$1\n\t${entry},`);
+        } else {
+          content += `\n\nadd_to_apps_screen = [\n\t${entry},\n]\n`;
+        }
+
+        await fs.writeFile(hooksPath, content);
+        return { content: [{ type: "text", text: `Added add_to_apps_screen entry for "${title}" (route: ${route}) in ${app_name}/hooks.py` }] };
       }
 
       case "frappe_set_hooks_property": {

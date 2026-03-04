@@ -1,4 +1,7 @@
+import * as path from "path";
 import { ToolModule, ToolResult, ToolContext } from "../types.js";
+import { getAppPath } from "../utils/paths.js";
+import { ensureAndWrite } from "../utils/files.js";
 
 export const uiTools: ToolModule = {
   definitions: [
@@ -12,6 +15,9 @@ export const uiTools: ToolModule = {
           component_type: { type: "string", enum: ["Button", "Dialog", "Form", "List", "DetailDrawer", "TextInput", "Autocomplete", "Avatar", "Badge", "Breadcrumbs", "Card", "Dropdown", "ErrorMessage", "FeatherIcon", "FileUploader", "GreenCheckIcon", "LoadingIndicator", "LoadingText", "Popover", "Rating", "Spinner", "Switch", "Tabs", "TextEditor", "Toast", "Tooltip"], description: "frappe-ui component type" },
           props: { type: "object", description: "Component props" },
           content: { type: "string", description: "Slot content" },
+          write_to_file: { type: "boolean", default: false, description: "Write the component to a .vue file on disk instead of just returning it" },
+          app_name: { type: "string", description: "Frappe app name (required if write_to_file=true)" },
+          file_path: { type: "string", description: "Path within frontend/src/ (e.g., 'components/MyButton.vue'). Required if write_to_file=true" },
         },
         required: ["component_name", "component_type"],
       },
@@ -26,6 +32,9 @@ export const uiTools: ToolModule = {
           route: { type: "string", description: "Vue Router route path" },
           components: { type: "array", items: { type: "string" }, description: "Components to include" },
           layout: { type: "string", enum: ["single-column", "sidebar", "full-width"], default: "single-column" },
+          write_to_file: { type: "boolean", default: false, description: "Write the page to a .vue file on disk instead of just returning it" },
+          app_name: { type: "string", description: "Frappe app name (required if write_to_file=true)" },
+          file_path: { type: "string", description: "Path within frontend/src/ (e.g., 'pages/Dashboard.vue'). Required if write_to_file=true" },
         },
         required: ["page_name", "route"],
       },
@@ -93,7 +102,7 @@ export const uiTools: ToolModule = {
   async handleToolCall(name: string, args: any, ctx: ToolContext): Promise<ToolResult | null> {
     switch (name) {
       case "frappe_generate_frappe_ui_component": {
-        const { component_name, component_type, props = {}, content = "" } = args;
+        const { component_name, component_type, props = {}, content = "", write_to_file = false, app_name, file_path: filePath } = args;
         const propsStr = Object.entries(props).map(([k, v]) => `${k}="${v}"`).join(" ");
 
         const componentTemplates: Record<string, string> = {
@@ -111,16 +120,30 @@ export const uiTools: ToolModule = {
         const template = componentTemplates[component_type] || `<${component_type} ${propsStr}>${content}</${component_type}>`;
 
         const code = `<template>\n  ${template}\n</template>\n\n<script setup>\nimport { ${component_type} } from 'frappe-ui'\nimport { ref } from 'vue'\n</script>`;
+
+        if (write_to_file && app_name && filePath) {
+          const fullPath = path.join(getAppPath(ctx.frappePath, app_name), "frontend", "src", filePath);
+          await ensureAndWrite(fullPath, code + "\n");
+          return { content: [{ type: "text", text: `Generated and saved ${component_type} component "${component_name}" to frontend/src/${filePath}` }] };
+        }
+
         return { content: [{ type: "text", text: `Generated ${component_type} component "${component_name}":\n\n${code}` }] };
       }
 
       case "frappe_generate_vue_page": {
-        const { page_name, route, components = [], layout = "single-column" } = args;
+        const { page_name, route, components = [], layout = "single-column", write_to_file = false, app_name, file_path: filePath } = args;
         const layoutClass = layout === "sidebar" ? "flex" : layout === "full-width" ? "w-full" : "max-w-4xl mx-auto";
         const imports = components.map((c: string) => `import ${c} from '@/components/${c}.vue'`).join("\n");
         const componentTags = components.map((c: string) => `<${c} />`).join("\n      ");
 
         const code = `<template>\n  <div class="${layoutClass} p-6">\n    <h1 class="text-2xl font-bold mb-4">${page_name}</h1>\n    <div class="space-y-4">\n      ${componentTags}\n    </div>\n  </div>\n</template>\n\n<script setup>\n${imports}\n</script>`;
+
+        if (write_to_file && app_name && filePath) {
+          const fullPath = path.join(getAppPath(ctx.frappePath, app_name), "frontend", "src", filePath);
+          await ensureAndWrite(fullPath, code + "\n");
+          return { content: [{ type: "text", text: `Generated and saved Vue page "${page_name}" to frontend/src/${filePath}` }] };
+        }
+
         return { content: [{ type: "text", text: `Generated Vue page for route "${route}":\n\n${code}` }] };
       }
 

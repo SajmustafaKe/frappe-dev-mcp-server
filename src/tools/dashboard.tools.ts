@@ -245,6 +245,60 @@ export const dashboardTools: ToolModule = {
         },
       },
     },
+    {
+      name: "frappe_create_desktop_icon",
+      description: "Create a Desktop Icon document (v16) - icons shown on the desktop/home screen. Supports Link, Folder, and App icon types with role-based visibility.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          label: { type: "string", description: "Icon label shown on desktop" },
+          icon_type: { type: "string", enum: ["Link", "Folder", "App"], default: "Link", description: "Type of desktop icon" },
+          link_type: { type: "string", enum: ["Workspace Sidebar", "External"], default: "Workspace Sidebar", description: "What the icon links to" },
+          link_to: { type: "string", description: "Target name (Workspace Sidebar title or external URL)" },
+          sidebar: { type: "string", description: "Link to a Workspace Sidebar document (auto-shows sidebar on click)" },
+          logo_url: { type: "string", description: "URL to a logo image" },
+          icon_image: { type: "string", description: "Path to icon image file" },
+          parent_icon: { type: "string", description: "Parent Desktop Icon (for Folder children)" },
+          bg_color: { type: "string", enum: ["gray", "blue", "green", "orange", "red", "yellow", "purple", "pink"], default: "gray", description: "Background color" },
+          roles: {
+            type: "array",
+            items: { type: "string" },
+            description: "Roles that can see this icon (Has Role child table). Empty = visible to all.",
+          },
+          standard: { type: "boolean", default: false, description: "Whether this is a standard (app-bundled) icon" },
+          app: { type: "string", description: "App name (required if standard=true)" },
+          hidden: { type: "boolean", default: false, description: "Hide from desktop" },
+          restrict_removal: { type: "boolean", default: false, description: "Prevent users from removing this icon" },
+          site: { type: "string" },
+        },
+        required: ["label"],
+      },
+    },
+    {
+      name: "frappe_list_desktop_icons",
+      description: "List Desktop Icon documents (v16), optionally filtered by app, icon_type, or role",
+      inputSchema: {
+        type: "object",
+        properties: {
+          app: { type: "string", description: "Filter by app name" },
+          icon_type: { type: "string", enum: ["Link", "Folder", "App"], description: "Filter by icon type" },
+          standard: { type: "boolean", description: "Filter by standard flag" },
+          site: { type: "string" },
+        },
+      },
+    },
+    {
+      name: "frappe_delete_desktop_icon",
+      description: "Delete a Desktop Icon by name/label",
+      inputSchema: {
+        type: "object",
+        properties: {
+          icon_name: { type: "string", description: "Desktop Icon document name (usually same as label)" },
+          site: { type: "string" },
+        },
+        required: ["icon_name"],
+      },
+    },
   ],
 
   async handleToolCall(name: string, args: any, ctx: ToolContext): Promise<ToolResult | null> {
@@ -472,6 +526,53 @@ export const dashboardTools: ToolModule = {
         if (args.for_user) filters.for_user = args.for_user;
         return await ctx.runBenchCommand({
           command: `execute frappe.client.get_list --args '${JSON.stringify(["Workspace", filters])}'`,
+          site: args.site,
+        });
+      }
+
+      case "frappe_create_desktop_icon": {
+        const data: any = {
+          doctype: "Desktop Icon",
+          label: args.label,
+          icon_type: args.icon_type || "Link",
+          link_type: args.link_type || "Workspace Sidebar",
+          link_to: args.link_to || "",
+          sidebar: args.sidebar || "",
+          logo_url: args.logo_url || "",
+          icon_image: args.icon_image || "",
+          parent_icon: args.parent_icon || "",
+          bg_color: args.bg_color || "gray",
+          standard: args.standard ? 1 : 0,
+          app: args.app || "",
+          hidden: args.hidden ? 1 : 0,
+          restrict_removal: args.restrict_removal ? 1 : 0,
+        };
+        if (args.roles && args.roles.length > 0) {
+          data.roles = args.roles.map((role: string, idx: number) => ({
+            role,
+            idx: idx + 1,
+          }));
+        }
+        return await ctx.runBenchCommand({
+          command: `execute frappe.client.insert --args '${JSON.stringify(data)}'`,
+          site: args.site,
+        });
+      }
+
+      case "frappe_list_desktop_icons": {
+        const filters: any = {};
+        if (args.app) filters.app = args.app;
+        if (args.icon_type) filters.icon_type = args.icon_type;
+        if (args.standard !== undefined) filters.standard = args.standard ? 1 : 0;
+        return await ctx.runBenchCommand({
+          command: `execute frappe.client.get_list --args '${JSON.stringify(["Desktop Icon", filters, ["label", "icon_type", "link_type", "link_to", "sidebar", "bg_color", "standard", "app", "hidden"]])}'`,
+          site: args.site,
+        });
+      }
+
+      case "frappe_delete_desktop_icon": {
+        return await ctx.runBenchCommand({
+          command: `execute frappe.client.delete --args '${JSON.stringify(["Desktop Icon", args.icon_name])}'`,
           site: args.site,
         });
       }

@@ -18,6 +18,7 @@ import { dashboardTools } from "./dashboard.tools.js";
 import { backgroundTools } from "./background.tools.js";
 import { dataTools } from "./data.tools.js";
 import { advancedTools } from "./advanced.tools.js";
+import { frontendTools } from "./frontend.tools.js";
 
 export function createToolRegistry(): ToolRegistry {
   const registry = new ToolRegistry();
@@ -65,6 +66,9 @@ export function createToolRegistry(): ToolRegistry {
 
   // Advanced (virtual doctypes, testing, pages, modules)
   registry.register(advancedTools);
+
+  // Frontend SPA (frappe-ui + Vue.js + Tailwind)
+  registry.register(frontendTools);
 
   // UI generation
   registry.register(uiTools);
