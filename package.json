@@ -12,6 +12,8 @@
     "restart": "./server.sh restart",
     "status": "./server.sh status",
     "dev": "tsx src/index.ts",
+    "start:stdio": "node dist/index.js --stdio",
+    "dev:stdio": "tsx src/index.ts --stdio",
     "validate": "node validate-mcp.js",
     "clean": "rm -rf dist"
   },

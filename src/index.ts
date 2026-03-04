@@ -1,5 +1,6 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
   ErrorCode,
@@ -74,7 +75,24 @@ class FrappeMCPServer {
     });
   }
 
-  async run() {
+  async runStdio() {
+    const serverInstance = this.createServer();
+    const transport = new StdioServerTransport();
+
+    serverInstance.onclose = () => {
+      process.exit(0);
+    };
+
+    await serverInstance.connect(transport);
+
+    const allTools = this.registry.getAllDefinitions();
+    console.error(`Frappe MCP Server v2.0.0 running on stdio`);
+    console.error(`Total tools available: ${allTools.length}`);
+    console.error(`Frappe path: ${this.frappePath}`);
+    console.error(`Default site: ${this.defaultSite}`);
+  }
+
+  async runSSE() {
     const port = process.env.PORT || 3000;
     const app = express();
 
@@ -184,5 +202,11 @@ class FrappeMCPServer {
 }
 
 // Start the server
-const server = new FrappeMCPServer();
-server.run().catch(console.error);
+const mcpServer = new FrappeMCPServer();
+const transportMode = process.argv.includes("--stdio") ? "stdio" : "sse";
+
+if (transportMode === "stdio") {
+  mcpServer.runStdio().catch(console.error);
+} else {
+  mcpServer.runSSE().catch(console.error);
+}
