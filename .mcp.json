@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "frappe-dev": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/index.js", "--stdio"],
+      "env": {
+        "FRAPPE_PATH": "${FRAPPE_PATH}",
+        "FRAPPE_DEFAULT_SITE": "${FRAPPE_DEFAULT_SITE}"
+      }
+    }
+  }
+}
